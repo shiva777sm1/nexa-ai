@@ -1,3 +1,8 @@
+"""
+Nexa AI - Desktop AI Assistant Backend
+Author: Shiva
+GitHub: https://github.com/Shiva777s
+"""
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 from llm_service import generate_response, generate_response_stream

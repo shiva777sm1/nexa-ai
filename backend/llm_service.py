@@ -1,3 +1,7 @@
+"""
+LLM Service - Ollama Integration
+Author: Shiva
+"""
 import ollama
 
 def generate_response(message: str) -> str:
