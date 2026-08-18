@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Nexa AI</title>
+  <style>
+    body { font-family: Arial; max-width: 600px; margin: 40px auto; }
+    #status { padding: 5px 10px; border-radius: 5px; display: inline-block; margin-bottom: 10px; }
+    .connected { background: #d4edda; color: #155724; }
+    .disconnected { background: #f8d7da; color: #721c24; }
+    #chat { border: 1px solid #ccc; height: 400px; overflow-y: auto; padding: 10px; margin-bottom: 10px; }
+    .msg { margin: 8px 0; }
+    .user { color: #0066cc; font-weight: bold; }
+    .ai { color: #333; }
+    input { width: 75%; padding: 8px; }
+    button { padding: 8px 15px; }
+  </style>
+</head>
+<body>
+  <h2>Nexa AI Assistant</h2>
+  <div id="status" class="disconnected">Disconnected</div>
+  <div id="chat"></div>
+  <input id="messageInput" type="text" placeholder="Type a message..." />
+  <button onclick="sendMessage()">Send</button>
+
+  <script>
+    let ws;
+    let currentAiMsg = null;
+
+    function connect() {
+      ws = new WebSocket("ws://127.0.0.1:8000/ws/chat");
+
+      ws.onopen = () => {
+        document.getElementById("status").innerText = "Connected";
+        document.getElementById("status").className = "connected";
+      };
+
+      ws.onclose = () => {
+        document.getElementById("status").innerText = "Disconnected - Reconnecting...";
+        document.getElementById("status").className = "disconnected";
+        setTimeout(connect, 2000); // auto-reconnect
+      };
+
+      ws.onmessage = (event) => {
+        if (event.data === "[END]") {
+          currentAiMsg = null;
+          return;
+        }
+        if (!currentAiMsg) {
+          currentAiMsg = document.createElement("div");
+          currentAiMsg.className = "msg ai";
+          document.getElementById("chat").appendChild(currentAiMsg);
+        }
+        currentAiMsg.innerText += event.data;
+        document.getElementById("chat").scrollTop = document.getElementById("chat").scrollHeight;
+      };
+    }
+
+    function sendMessage() {
+      const input = document.getElementById("messageInput");
+      const message = input.value.trim();
+      if (!message) return;
+
+      const userMsg = document.createElement("div");
+      userMsg.className = "msg user";
+      userMsg.innerText = "You: " + message;
+      document.getElementById("chat").appendChild(userMsg);
+
+      ws.send(message);
+      input.value = "";
+    }
+
+    document.getElementById("messageInput").addEventListener("keypress", (e) => {
+      if (e.key === "Enter") sendMessage();
+    });
+
+    connect();
+  </script>
+</body>
+</html>
